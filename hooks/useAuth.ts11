@@ -1,0 +1,157 @@
+
+import { useMutation, UseMutationResult } from '@tanstack/react-query';
+import axios, { AxiosError } from 'axios';
+
+const API_URL = 'https://development.tradefund.com/api';
+
+interface RegisterData {
+    name: string;
+    email: string;
+    password: string;
+    last_name: string;
+    device_type: string;
+    device_token: string;
+    question_id: string;
+    answer: string;
+  }
+
+  interface Project {
+    image: string;
+    category: string;
+    title: string;
+    author: string;
+    description: string;
+    location: string;
+    fundedPercentage: number;
+    pledgedAmount: string;
+    lentDate: string;
+    progress: number;
+  }
+
+interface LoginData {
+  email: string;
+  password: string;
+  device_type: string;
+  device_token: string;
+}
+interface ForgotPasswordData {
+  email: string; // This will be the only data needed for the forgot password request
+}
+interface UpdatePasswordData {
+  email: string;
+  password: string;
+  confirm_password: string;
+}
+
+
+interface VerifyOtpData {
+  email: string;
+  otp: string;
+}
+
+interface AuthResponse {
+  // Define your response structure here
+}
+
+export interface AuthError {
+    message: string;
+    errors?: Record<string, string[]>;
+  }
+  
+
+export const useRegister = (): UseMutationResult<AuthResponse, AxiosError<AuthError>, RegisterData> => {
+    return useMutation(async (data: RegisterData) => {
+      const response = await axios.post(`${API_URL}/register`, data, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
+      return response.data;
+    }, {
+      onError: (error:any) => {
+        if (axios.isAxiosError(error)) {
+          console.error('Error registering:', error.response?.data);
+        }
+      }
+    });
+  };
+export const useLogin = (): UseMutationResult<AuthResponse, AxiosError<AuthError>, LoginData> => {
+  return useMutation(async (data: LoginData) => {
+    const response = await axios.post(`${API_URL}/login`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    });
+    return response.data;
+  }, {
+    onError: (error:any) => {
+      if (axios.isAxiosError(error)) {
+        console.error('Error logging in:', error.response?.data);
+      }
+    }
+  });
+};
+
+
+export const useForgotPassword = (): UseMutationResult<AuthResponse, AxiosError<AuthError>, ForgotPasswordData> => {
+  return useMutation(async (data: ForgotPasswordData) => {
+    const response = await axios.post(`${API_URL}/trigger_otp`, {
+      email: data.email,
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    });
+    return response.data;
+  }, {
+    onError: (error:any) => {
+      if (axios.isAxiosError(error)) {
+        console.error('Error triggering OTP:', error.response?.data);
+      }
+    },
+  });
+};
+
+export const useVerifyOtp = (): UseMutationResult<AuthResponse, AxiosError<AuthError>, VerifyOtpData> => {
+  return useMutation(async (data: VerifyOtpData) => {
+    const response = await axios.post(`${API_URL}/verify_otp`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    });
+    return response.data;
+  }, {
+    onError: (error:any) => {
+      if (axios.isAxiosError(error)) {
+        console.error('Error verifying OTP:', error.response?.data);
+      }
+    },
+  });
+};
+
+export const useUpdatePasswordData = (): UseMutationResult<AuthResponse, AxiosError<AuthError>, UpdatePasswordData> => {
+  return useMutation(async (data: UpdatePasswordData) => {
+    const response = await axios.post(`${API_URL}/forgot_password`, {
+      email: data.email,
+      password: data.password,
+      confirm_password: data.confirm_password,
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    });
+    return response.data;
+  }, {
+    onError: (error:any) => {
+      if (axios.isAxiosError(error)) {
+        console.error('Error resetting password:', error.response?.data);
+      }
+    },
+  });
+};
+
