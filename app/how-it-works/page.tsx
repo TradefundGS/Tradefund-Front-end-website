@@ -147,7 +147,7 @@ const faqs = [
 				The entire procedure is bound by iron clad discretion and without any
 				intervention from Tradefund. The participants sign a formal contract
 				after reaching an agreement, followed by a funds transfer to the
-				borrower's bank account.
+				borrower bank account.
 				<br />
 				<br />
 				Repayment can be made and tracked through Tradefund through a variety of
@@ -216,7 +216,7 @@ const faqs = [
 	},
 ];
 
-function classNames(...classes) {
+function classNames(...classes: any) {
 	return classes.filter(Boolean).join(" ");
 }
 
