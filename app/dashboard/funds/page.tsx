@@ -32,129 +32,138 @@ import { Progress } from "@/components/ui/progress";
 import TableSkeleton from "@/components/TableSkeleton";
 import ActionMenu from "@/components/myprojects/ActionMenu";
 import AdminBar from "@/components/AdminBar";
-import { parse, format } from 'date-fns';
+import { parse, format } from "date-fns";
 import {
-    DropdownMenu,
-    DropdownMenuCheckboxItem,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+	DropdownMenu,
+	DropdownMenuCheckboxItem,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import FundingActionMenu from "@/components/FundingActionMenu";
 
-
 const FundingListPage: React.FC = () => {
 	const [filter, setFilter] = React.useState("all");
-  
+
 	// Fetch data based on the current filter
 	const { data, isLoading, isError, error } = useFundLists(filter);
 
-  	console.log("myfunds", data)
-	
-	const [sorting, setSorting] = React.useState<SortingState>([]);
-	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-	const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+	console.log("myfunds", data);
+
+	const [sorting, setSorting] = React.useState<SortingState>([
+		{ id: "created_at", desc: true },
+	]);
+	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+		[]
+	);
+	const [columnVisibility, setColumnVisibility] =
+		React.useState<VisibilityState>({});
 	const [rowSelection, setRowSelection] = React.useState({});
 
 	const convertDateFormat = (dateStr) => {
-		const [day, month, year] = dateStr.split('/');
+		const [day, month, year] = dateStr.split("/");
 		return `${year}-${month}-${day}`; // returns date in YYYY-MM-DD format
 	};
-	
+
 	const projectsData = React.useMemo(() => {
 		if (!data) return [];
-		
+
 		const lendingList = data.success.lending_list;
-  
-    return lendingList.map((lending) => {
-        const project = lending.project;
-        const projectUser = lending.project_user;
+		lendingList.sort(
+			(a, b) =>
+				new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+		);
 
-        // Convert repaymentDate format if it's in DD/MM/YYYY
-        const formattedRepaymentDate = lending.repayment_date 
-            ? convertDateFormat(lending.repayment_date)
-            : null;
+		return lendingList.map((lending) => {
+			const project = lending.project;
+			const projectUser = lending.project_user;
 
-        return {
-            ...lending,
-            name: project.name,
-            borrower: projectUser.name,
-            loanTerm: project.loan_terms,
-            rate: project.interest,
-            amountLent: project.needed_amount,
-			capitalReturned: lending.capital_retuned
-			? lending.capital_retuned.toFixed(2)
-			: "0.00",
-		interestReturned: lending.interest_returned
-			? lending.interest_returned.toFixed(2)
-			: "0.00",
-		percentageRepaid: lending.percentage_returned
-			? lending.percentage_returned.toFixed(2)
-			: "0.00",
-            repaymentDate: formattedRepaymentDate ? format(new Date(formattedRepaymentDate), 'yyyy-MM-dd') : formattedRepaymentDate,
-            monthlyRepayment: lending.monthly_repayment
-				? lending.monthly_repayment.toFixed(2)
-				: "0.00",
-            totalArrears: lending.total_arrears,
-            status: project.status,
-            actions: "-"
-        };
-    });
-}, [data, filter]);
-  
+			// Convert repaymentDate format if it's in DD/MM/YYYY
+			const formattedRepaymentDate = lending.repayment_date
+				? convertDateFormat(lending.repayment_date)
+				: null;
+
+			return {
+				...lending,
+				name: project.name,
+				borrower: projectUser.name,
+				loanTerm: project.loan_terms,
+				rate: project.interest,
+				amountLent: project.needed_amount,
+				capitalReturned: lending.capital_retuned
+					? lending.capital_retuned.toFixed(2)
+					: "0.00",
+				interestReturned: lending.interest_returned
+					? lending.interest_returned.toFixed(2)
+					: "0.00",
+				percentageRepaid: lending.percentage_returned
+					? lending.percentage_returned.toFixed(2)
+					: "0.00",
+				repaymentDate: formattedRepaymentDate
+					? format(new Date(formattedRepaymentDate), "yyyy-MM-dd")
+					: formattedRepaymentDate,
+				monthlyRepayment: lending.monthly_repayment
+					? lending.monthly_repayment.toFixed(2)
+					: "0.00",
+				totalArrears: lending.total_arrears,
+				status: project.status,
+				actions: "-",
+			};
+		});
+	}, [data, filter]);
+
 	const columns = React.useMemo(
-	  () => [
-		{ header: "Name", accessorKey: "name" },
-		{ header: "Borrower", accessorKey: "borrower" },
-		{ header: "Loan Term", accessorKey: "loanTerm" },
-		{ header: "Rate", accessorKey: "rate" },
-		{ header: "Amount Lent ($)", accessorKey: "amountLent" },
-		{ header: "Capital Returned ($)", accessorKey: "capitalReturned" },
-		{ header: "Interest Returned ($)", accessorKey: "interestReturned" },
-		{ header: "Percentage Repaid", accessorKey: "percentageRepaid" },
-		{ header: "Repayment Date", accessorKey: "repaymentDate" },
-		{ header: "Monthly Repayment ($)", accessorKey: "monthlyRepayment" },
-		{ header: "Total Arrears", accessorKey: "totalArrears" },
-		{ header: "Status", accessorKey: "status" },
-		{ 
-            header: "Actions", 
-            accessorKey: "actions", 
-            cell: ({ row }) => <FundingActionMenu projectId={row.original.project.id} />
-        },
-	  ],
-	  []
+		() => [
+			{ header: "Name", accessorKey: "name" },
+			{ header: "Borrower", accessorKey: "borrower" },
+			{ header: "Loan Term", accessorKey: "loanTerm" },
+			{ header: "Rate", accessorKey: "rate" },
+			{ header: "Amount Lent ($)", accessorKey: "amountLent" },
+			{ header: "Capital Returned ($)", accessorKey: "capitalReturned" },
+			{ header: "Interest Returned ($)", accessorKey: "interestReturned" },
+			{ header: "Percentage Repaid", accessorKey: "percentageRepaid" },
+			{ header: "Repayment Date", accessorKey: "repaymentDate" },
+			{ header: "Monthly Repayment ($)", accessorKey: "monthlyRepayment" },
+			{ header: "Total Arrears", accessorKey: "totalArrears" },
+			{ header: "Status", accessorKey: "status" },
+			// { header: "Created At", accessorKey: "created_at" },
+			{
+				header: "Actions",
+				accessorKey: "actions",
+				cell: ({ row }) => (
+					<FundingActionMenu projectId={row.original.project.id} />
+				),
+			},
+		],
+		[]
 	);
-  
-	const table = useReactTable({
-	  data: projectsData,
-	  columns,
-	  onSortingChange: setSorting,
-	  onColumnFiltersChange: setColumnFilters,
-	  getCoreRowModel: getCoreRowModel(),
-	  getFilteredRowModel: getFilteredRowModel(),
-	  getPaginationRowModel: getPaginationRowModel(),
-	  getSortedRowModel: getSortedRowModel(),
-	  onColumnVisibilityChange: setColumnVisibility,
-	  onRowSelectionChange: setRowSelection,
-	  state: {
-		sorting,
-		columnFilters,
-		columnVisibility,
-		rowSelection,
-	  },
-	});
-	
-  
-	
-	
-	if (isError) return <div>Error: {error.message}</div>;
-  
-	return (
 
+	const table = useReactTable({
+		data: projectsData,
+		columns,
+		onSortingChange: setSorting,
+		onColumnFiltersChange: setColumnFilters,
+		getCoreRowModel: getCoreRowModel(),
+		getFilteredRowModel: getFilteredRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+		onColumnVisibilityChange: setColumnVisibility,
+		onRowSelectionChange: setRowSelection,
+		state: {
+			sorting,
+			columnFilters,
+			columnVisibility,
+			rowSelection,
+		},
+	});
+
+	if (isError) return <div>Error: {error.message}</div>;
+
+	return (
 		<>
-		<AdminBar  currentPage="/dashboard/funds" />
+			<AdminBar currentPage="/dashboard/funds" />
 			<div className="px-4 sm:px-6 lg:px-8 mb-8">
 				<div className="-mx-4 mt-8 sm:-mx-0">
 					<div className="min-w-full divide-y divide-gray-300 bg-white shadow overflow-hidden sm:rounded-lg">
@@ -173,23 +182,23 @@ const FundingListPage: React.FC = () => {
 									</div>
 									<div className="px-6 py-4 sm:flex sm:items-center gap-4 sm:justify-between">
 										<div className="">
-										<Select
-						  value={filter}
-						  onValueChange={(value) => setFilter(value)}
-						>
-						  <SelectTrigger className="w-[180px]">
-							<SelectValue placeholder="Select Filter" />
-						  </SelectTrigger>
-						  <SelectContent>
-							<SelectGroup>
-							  <SelectLabel>Options</SelectLabel>
-							  <SelectItem value="refunded">Refunded</SelectItem>
-							  <SelectItem value="all">All</SelectItem>
-							  <SelectItem value="lended">Lended</SelectItem>
-							  <SelectItem value="canceled">Canceled</SelectItem>
-							</SelectGroup>
-						  </SelectContent>
-						</Select>
+											<Select
+												value={filter}
+												onValueChange={(value) => setFilter(value)}
+											>
+												<SelectTrigger className="w-[180px]">
+													<SelectValue placeholder="Select Filter" />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectGroup>
+														<SelectLabel>Options</SelectLabel>
+														<SelectItem value="refunded">Refunded</SelectItem>
+														<SelectItem value="all">All</SelectItem>
+														<SelectItem value="lended">Lended</SelectItem>
+														<SelectItem value="canceled">Canceled</SelectItem>
+													</SelectGroup>
+												</SelectContent>
+											</Select>
 										</div>
 										<DataTableFilters
 											emailFilterValue={
@@ -237,10 +246,7 @@ const FundingListPage: React.FC = () => {
 				</div>
 			</div>
 		</>
-	  
 	);
-  };
-  
-
+};
 
 export default FundingListPage;

@@ -48,7 +48,7 @@ export const columns: ColumnDef<WithdrawRequest>[] = [
 ];
 
 const CancelButton = ({ requestId }: { requestId: string }) => {
-	const { refetch } = useGetWithdrawRequest(); 
+	const { refetch } = useGetWithdrawRequest();
 	const {
 		refetch: withdraw,
 		isLoading,
@@ -58,14 +58,15 @@ const CancelButton = ({ requestId }: { requestId: string }) => {
 	const handleCancelClick = async () => {
 		try {
 			await withdraw();
-			refetch(); 
-			
+			refetch();
+
 			toast.success("Request Canceled", {
 				description: "Your withdrawal request has been successfully canceled.",
 			});
 		} catch (error) {
 			toast.error("Failed to cancel", {
-				description: "There was an issue canceling the request. Please try again.",
+				description:
+					"There was an issue canceling the request. Please try again.",
 			});
 			console.error("Failed to cancel request:", error);
 		}
@@ -84,16 +85,25 @@ const CancelButton = ({ requestId }: { requestId: string }) => {
 
 export function WithdrawTable() {
 	const { data, isLoading, isError, error, refetch } = useGetWithdrawRequest();
-	const [withdrawRequests, setWithdrawRequests] = useState<WithdrawRequest[]>([]);
+	const [withdrawRequests, setWithdrawRequests] = useState<WithdrawRequest[]>(
+		[]
+	);
 
 	useEffect(() => {
 		if (data?.success?.requests) {
-			const transformedData = data.success.requests.map((request: any) => ({
-				id: request.id.toString(),
-				amount: parseFloat(request.amount),
-				date: new Date(request.created_at).toISOString().split("T")[0],
-				status: request.status.toLowerCase() as "pending" | "canceled" | "settled",
-			}));
+			const transformedData = data.success.requests
+				.map((request: any) => ({
+					id: request.id.toString(),
+					amount: parseFloat(request.amount),
+					date: new Date(request.created_at).toISOString().split("T")[0],
+					status: request.status.toLowerCase() as
+						| "pending"
+						| "canceled"
+						| "settled",
+					created_at: new Date(request.created_at), // keep original date for sorting
+				}))
+				.sort((a, b) => b.created_at.getTime() - a.created_at.getTime()); // newest first
+
 			setWithdrawRequests(transformedData);
 		}
 	}, [data]);
@@ -114,104 +124,104 @@ export function WithdrawTable() {
 		<div className="overflow-x-auto rounded-md border">
 			{isLoading ? (
 				<table className="min-w-full bg-white border border-gray-200">
-				<thead>
-					<tr>
-						<th className="px-4 py-2 text-left">Name</th>
-						<th className="px-4 py-2 text-left">Bank Name</th>
-						<th className="px-4 py-2 text-left">Account Number</th>
-						<th className="px-4 py-2 text-left">IFSC/SWIFT</th>
-						<th className="px-4 py-2 text-left">Primary</th>
-						<th className="px-4 py-2">Actions</th>
-					</tr>
-				</thead>
-				<tbody>
-					{/* Render skeletons for each column while loading */}
-					<tr>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-					</tr>
+					<thead>
+						<tr>
+							<th className="px-4 py-2 text-left">Name</th>
+							<th className="px-4 py-2 text-left">Bank Name</th>
+							<th className="px-4 py-2 text-left">Account Number</th>
+							<th className="px-4 py-2 text-left">IFSC/SWIFT</th>
+							<th className="px-4 py-2 text-left">Primary</th>
+							<th className="px-4 py-2">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						{/* Render skeletons for each column while loading */}
+						<tr>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+						</tr>
 
-					<tr>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-					</tr>
+						<tr>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+						</tr>
 
-					<tr>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-					</tr>
+						<tr>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+						</tr>
 
-					<tr>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-						<td className="p-4">
-							<Skeleton className="rounded h-3 w-full" />
-						</td>
-					</tr>
-					{/* You can add more skeleton rows here if you want */}
-				</tbody>
-			</table>
+						<tr>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+							<td className="p-4">
+								<Skeleton className="rounded h-3 w-full" />
+							</td>
+						</tr>
+						{/* You can add more skeleton rows here if you want */}
+					</tbody>
+				</table>
 			) : isError ? (
 				<p>Error: {error.message}</p>
 			) : (

@@ -95,7 +95,7 @@ const MyProjectPage: React.FC = () => {
 	// Fetch data based on the current filter
 	const { data, isLoading, isError, error } = useMyProjects(filter);
 
-	console.log("projList", data)
+	console.log("projList", data);
 
 	const [sorting, setSorting] = React.useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -107,10 +107,13 @@ const MyProjectPage: React.FC = () => {
 
 	const projectsData: Payment[] = React.useMemo(() => {
 		if (!data) return [];
-		let projectsList = data.ProjectsList;
+
+		let projectsList = [...data.ProjectsList].sort(
+			(a, b) =>
+				new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+		);
 
 		return projectsList.map((project) => {
-			console.log(`End date for project ${project.id}: ${project.end_date}`);
 			return {
 				id: project.id.toString(),
 				name: project.name,
@@ -123,10 +126,10 @@ const MyProjectPage: React.FC = () => {
 				fixedLending: project.pay_method,
 				status: project.status ?? "Unknown",
 				comments: project.comment ? project.comment.length : 0,
-  followers: project.follower ? project.follower.length : 0,
+				followers: project.follower ? project.follower.length : 0,
 			};
 		});
-	}, [data, filter]);
+	}, [data, filter, purposes]);
 
 	const columns = React.useMemo(
 		() => [
@@ -210,21 +213,21 @@ const MyProjectPage: React.FC = () => {
 	const tableData = React.useMemo(
 		() => (isLoading ? Array(30).fill({}) : projectsData),
 		[isLoading, projectsData]
-	  ); 
-	  const tableColumns = React.useMemo(
+	);
+	const tableColumns = React.useMemo(
 		() =>
-		  isLoading
-			? columns.map((column) => ({
-				...column,
-				Cell: <Skeleton />,
-			  }))
-			: columns,
+			isLoading
+				? columns.map((column) => ({
+						...column,
+						Cell: <Skeleton />,
+				  }))
+				: columns,
 		[isLoading, columns]
-	  );
+	);
 
 	const table = useReactTable({
 		data: tableData,
-		columns:tableColumns,
+		columns: tableColumns,
 		onSortingChange: setSorting,
 		onColumnFiltersChange: setColumnFilters,
 		getCoreRowModel: getCoreRowModel(),
@@ -241,7 +244,6 @@ const MyProjectPage: React.FC = () => {
 		},
 	});
 
-	
 	if (isError) return <div>Error: {error.message}</div>;
 
 	return (
@@ -305,8 +307,8 @@ const MyProjectPage: React.FC = () => {
 											}
 										/>
 										<Button>
-												<Link href="/create">Create Project</Link>
-											</Button>
+											<Link href="/create">Create Project</Link>
+										</Button>
 									</div>
 								</div>
 								<div className="px-6 py-4">
@@ -317,12 +319,12 @@ const MyProjectPage: React.FC = () => {
 												column.toggleSorting(column.getIsSorted() === "asc")
 											}
 										/>
-									
+
 										<TableBodyComponent
 											className="divide-y divide-gray-200 bg-white"
 											rows={table.getRowModel().rows}
 											columns={table.getAllColumns()}
-											isLoading={isLoading} 
+											isLoading={isLoading}
 										/>
 									</Table>
 									<PaginationComponent

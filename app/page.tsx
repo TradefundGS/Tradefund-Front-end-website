@@ -5,6 +5,7 @@ import CallToAction from "@/components/CallToAction";
 import ProjectCardList from "@/components/invest/topProjectCardList";
 import StatisticsComponent from "@/components/statistics";
 import { AuthContext } from "@/contexts/authContext";
+import Newsletter from "@/components/Newsletter/Newsletter";
 
 export default function Home() {
 	const { isLoggedIn } = useContext(AuthContext);
@@ -93,7 +94,7 @@ export default function Home() {
 					<ProjectCardList />
 				</div>
 			) : null}
-			<CallToAction />
+			<Newsletter />
 		</>
 	);
 }

@@ -16,9 +16,9 @@ const EmptyProject = () => {
 				<h3 className="text-2xl font-bold tracking-tight text-gray-900">
 					Lender
 				</h3>
-				<p className="mt-6 text-base leading-7 text-gray-600">
-					Lorem ipsum dolor sit amet consect etur adipisicing elit. Itaque amet
-					indis perferendis blanditiis repellendus etur quidem assumenda.
+				<p className="mt-6 font-medium text-base leading-7 text-gray-600">
+					Earn the returns you’re looking for while engaging in specific
+					projects that interest you!
 				</p>
 				<div className="mt-10 flex items-center gap-x-4">
 					<h4 className="flex-none text-sm font-semibold leading-6 text-gray-900">

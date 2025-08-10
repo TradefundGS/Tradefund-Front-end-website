@@ -13,7 +13,7 @@ import { GoHeart, GoHeartFill } from "react-icons/go";
 import LendDrawer from "./LendDrawer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AuthContext } from "@/contexts/authContext";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 const IMAGE_BASE_URL = `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}`;
 
@@ -33,7 +33,7 @@ interface ProjectDetailsProps {
 				description2?: string;
 				description3?: string;
 				description4?: string;
-				video_url?:string;
+				video_url?: string;
 			};
 			user?: {
 				name?: string;
@@ -67,24 +67,23 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
 		isError: profileError,
 		error,
 	} = useProfile();
-	const router = useRouter(); 
+	const router = useRouter();
 	const handleLendClick = () => {
-        if (!isLoggedIn) {
-            router.push('/auth/login');
-        } else {
-            handleOpenDrawer(); 
-        }
-    };
+		if (!isLoggedIn) {
+			router.push("/auth/login");
+		} else {
+			handleOpenDrawer();
+		}
+	};
 	const handleFollowClick = () => {
-        if (!isLoggedIn) {
-            router.push('/auth/login'); 
-        } else {
-            handleFollow(); 
-        }
-    };
+		if (!isLoggedIn) {
+			router.push("/auth/login");
+		} else {
+			handleFollow();
+		}
+	};
 
-
-	console.log(data)
+	console.log(data);
 
 	const isKYCVerified = profileData?.user?.kyc_status === "Verified";
 
@@ -112,9 +111,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
 	const pay_method = data?.success?.project?.pay_method;
 
 	const neededAmount = Number(project.needed_amount);
-  const totalInvestment = Number(project.total_investment);
-  const isFixedPaymentMethod = project.pay_method === "Fixed";
-  
+	const totalInvestment = Number(project.total_investment);
+	const isFixedPaymentMethod = project.pay_method === "Fixed";
+
 	// const user = data?.success?.user;
 
 	const { mutate, isPending: isLoading } = useFollowProject();
@@ -165,7 +164,6 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
 	const investorCount = investors.length;
 	const username = user.name;
 
-
 	return (
 		<ProjectProvider {...project}>
 			<div className="bg-gray-50">
@@ -177,7 +175,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
 								<div className="space-y-4 border-b pb-4">
 									<div className="flex justify-between items-center">
 										<h1 className="text-sm font-medium text-gray-900">
-											{investorCount} lenders 
+											{investorCount} lenders
 										</h1>
 										<div className="flex items-center">
 											<DateCounter endDate={endDate} />
@@ -262,7 +260,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
 
 								<div className="mt-4">
 									<div className="flex gap-4 justify-between">
-									{/* <Button
+										{/* <Button
                     type="button"
                     disabled={user?.id === loggedInUserId}
                     onClick={handleLendClick} // Use the updated handler
@@ -270,91 +268,107 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
                 >
                     Lend Now
                 </Button> */}
-				{isFixedPaymentMethod && neededAmount === totalInvestment ? (
-		<div>
-		<span className="py-1 px-2 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500">
-		  <svg className="shrink-0 size-3" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-			<path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
-			<path d="m9 12 2 2 4-4"></path>
-		  </svg>
-		  Goal reached!
-		</span>
-	  </div>
-      ) : (
-        <Button
-          type="button"
-          disabled={user?.id === loggedInUserId}
-          onClick={handleLendClick}
-          className="mb-2 text-white bg-primary w-2/3 hover:bg-gray-900 px-4 py-2 rounded-md"
-        >
-          Lend Now
-        </Button>
-      )}
-                <LendDrawer
-                    projectId={project.id}
-                    open={isDrawerOpen}
-                    onClose={handleCloseDrawer}
-					refetch={refetch }
-                />
-                <Button
-                    onClick={handleFollowClick} // Use the updated handler
-                    className={`flex w-1/3 items-center justify-center rounded-md border px-4 py-2 text-base font-medium focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 ${
-                        isFollowing ? 'bg-primary text-white' : 'bg-gray-900 text-white'
-                    }`}
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                        <div
-                            className="animate-spin inline-block h-5 w-5 border-[3px] border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500"
-                            role="status"
-                            aria-label="loading"
-                        >
-                            <span className="sr-only">Loading...</span>
-                        </div>
-                    ) : isFollowing ? (
-                        <>
-                            <GoHeartFill className="h-5 w-5 me-4 text-white" />
-                            Unfollow
-                        </>
-                    ) : (
-                        <>
-                            <GoHeart className="h-5 w-5 me-4" />
-                            Follow
-                        </>
-                    )}
-                </Button>
+										{isFixedPaymentMethod &&
+										neededAmount === totalInvestment ? (
+											<div>
+												<span className="py-1 px-2 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500">
+													<svg
+														className="shrink-0 size-3"
+														xmlns="http://www.w3.org/2000/svg"
+														width="24"
+														height="24"
+														viewBox="0 0 24 24"
+														fill="none"
+														stroke="currentColor"
+														stroke-width="2"
+														stroke-linecap="round"
+														stroke-linejoin="round"
+													>
+														<path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
+														<path d="m9 12 2 2 4-4"></path>
+													</svg>
+													Goal reached!
+												</span>
+											</div>
+										) : (
+											<Button
+												type="button"
+												disabled={user?.id === loggedInUserId}
+												onClick={handleLendClick}
+												className="mb-2 text-white bg-primary w-2/3 hover:bg-gray-900 px-4 py-2 rounded-md"
+											>
+												Lend Now
+											</Button>
+										)}
+										<LendDrawer
+											projectId={project.id}
+											open={isDrawerOpen}
+											onClose={handleCloseDrawer}
+											refetch={refetch}
+										/>
+										<Button
+											onClick={handleFollowClick} // Use the updated handler
+											className={`flex w-1/3 items-center justify-center rounded-md border px-4 py-2 text-base font-medium focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 ${
+												isFollowing
+													? "bg-primary text-white"
+													: "bg-gray-900 text-white"
+											}`}
+											disabled={isLoading}
+										>
+											{isLoading ? (
+												<div
+													className="animate-spin inline-block h-5 w-5 border-[3px] border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500"
+													role="status"
+													aria-label="loading"
+												>
+													<span className="sr-only">Loading...</span>
+												</div>
+											) : isFollowing ? (
+												<>
+													<GoHeartFill className="h-5 w-5 me-4 text-white" />
+													Unfollow
+												</>
+											) : (
+												<>
+													<GoHeart className="h-5 w-5 me-4" />
+													Follow
+												</>
+											)}
+										</Button>
+									</div>
 
-
-					</div>
-
-									{isLoggedIn&& <Tabs
-										data={data}
-										refetch={refetch}
-									/>}
+									{isLoggedIn && (
+										<Tabs
+											data={data}
+											refetch={refetch}
+										/>
+									)}
 								</div>
 							</div>
 
 							{/* Image gallery */}
 							<div className="mt-8 lg:col-span-7 lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:mt-0">
-  <h2 className="sr-only">Images</h2>
-  <div className="sticky top-20">
-    <div className="border border-gray-300 p-10 rounded-lg relative"> {/* Add relative here */}
-      <Image
-        src={imageUrl}
-        alt="Project Image"
-        width={700}
-        height={1000}
-        className="w-full h-auto object-cover rounded-lg"
-        loading="lazy"
-      />
-      
-      {/* Pay Method Badge */}
-      <span className="absolute top-2 right-2  inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-gray-800 text-white dark:bg-white dark:text-neutral-800"> {pay_method}</span>
-	  
-    </div>
-  </div>
-</div>
-
+								<h2 className="sr-only">Images</h2>
+								<div className="sticky top-20">
+									<div className="border border-gray-300 p-10 rounded-lg relative">
+										{" "}
+										{/* Add relative here */}
+										<Image
+											src={imageUrl}
+											alt="Project Image"
+											width={700}
+											height={1000}
+											className="w-full h-auto object-cover rounded-lg"
+											loading="lazy"
+										/>
+										{/* Pay Method Badge */}
+										<span className="absolute top-2 right-2  inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-gray-800 text-white dark:bg-white dark:text-neutral-800">
+											{" "}
+											{pay_method}
+										</span>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
