@@ -5,14 +5,21 @@ import RelativeTime from "./RelativeTime";
 import { z } from "zod";
 
 const investorSchema = z.object({
-	id: z.string(),
+	id: z.string().or(z.number()).transform(String),
 	created_at: z.string(),
-	amount: z.number(),
-	user: z.object({
-		name: z.string(),
-		email: z.string(),
-		profile_image: z.string().optional(),
-	}),
+	amount: z
+		.union([z.string(), z.number()])
+		.transform((val) => Number(val) || 0),
+	preference: z
+		.enum(["Visible", "Hide Name", "Hide Amount", "Anonymous"])
+		.optional(),
+	user: z
+		.object({
+			name: z.string().optional(),
+			email: z.string().optional(),
+			profile_image: z.string().optional(),
+		})
+		.optional(),
 });
 
 const dataSchema = z.object({
@@ -38,70 +45,95 @@ const TabTwoContent: React.FC<TabTwoContentProps> = ({ data }) => {
 
 	useEffect(() => {
 		if (data.success?.investors) {
-			const sortedInvestors = data.success.investors.sort((a, b) => {
-				return (
+			const sortedInvestors = [...data.success.investors].sort(
+				(a, b) =>
 					new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-				);
-			});
+			);
 			setInvestors(sortedInvestors);
+		} else {
+			setInvestors([]);
 		}
 	}, [data]);
 
-	// console.log("Investors:", data.success?.investors);
+	const getDisplayData = (investor: z.infer<typeof investorSchema>) => {
+		const pref = investor.preference || "Visible";
 
-	// console.log("Profile Image: ", investors.user.profile_image);
-	// console.log("Name: ", investors.user.name);
+		let displayName = investor.user?.name || "Unknown User";
+		let displayEmail = investor.user?.email || "";
+		let displayAmount = investor.amount;
+
+		if (pref === "Hide Name") {
+			displayName = "Anonymous";
+			displayEmail = "";
+		} else if (pref === "Hide Amount") {
+			displayAmount = null;
+		} else if (pref === "Anonymous") {
+			displayName = "Anonymous";
+			displayEmail = "";
+			displayAmount = null;
+		}
+
+		return { displayName, displayEmail, displayAmount };
+	};
 
 	return (
 		<div>
 			{investors.length > 0 ? (
-				investors.map((investor) => (
-					<div
-						key={investor.id}
-						className="flex items-center gap-4 border hover:border-primary p-4 rounded-lg mb-4 hover:bg-white"
-					>
-						{/* <Avatar className="hidden h-9 w-9 sm:flex">
-                            <AvatarImage
-                                src={investor.user.profile_image ? `/${investor.user.profile_image}` : '/avatar.jpeg'}
-                                alt="Avatar"
-                            />
-                            <AvatarFallback>{investor.user.name.charAt(0).toUpperCase()}</AvatarFallback>
-                        </Avatar> */}
+				investors.map((investor) => {
+					const { displayName, displayEmail, displayAmount } =
+						getDisplayData(investor);
 
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage
-								src={
-									investor.user.profile_image
-										? `${MEDIA_BASE_URL}${investor.user.profile_image}`
-										: ""
-								}
-								alt="Avatar"
-								className="object-cover"
-							/>
-							<AvatarFallback className="bg-gray-300 text-xl text-semibold">
-								{investor.user.name.charAt(0).toUpperCase()}
-							</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<div className="flex items-center gap-2">
-								<p className="text-sm font-medium leading-none">
-									{investor.user.name}
-								</p>
-								<span className="text-sm text-muted-foreground">
-									<RelativeTime date={investor.created_at} />
-								</span>
+					return (
+						<div
+							key={investor.id}
+							className="flex items-center gap-4 border hover:border-primary p-4 rounded-lg mb-4 hover:bg-white transition"
+						>
+							{/* Avatar */}
+							<Avatar className="h-10 w-10">
+								<AvatarImage
+									src={
+										investor.user?.profile_image
+											? `${MEDIA_BASE_URL}${investor.user.profile_image}`
+											: "/avatar.jpeg"
+									}
+									alt={displayName}
+									className="object-cover"
+								/>
+								<AvatarFallback className="bg-gray-300 text-sm font-semibold">
+									{displayName.charAt(0).toUpperCase()}
+								</AvatarFallback>
+							</Avatar>
+
+							{/* User Info */}
+							<div className="grid gap-1">
+								<div className="flex items-center gap-2">
+									<p className="text-sm font-medium leading-none">
+										{displayName}
+									</p>
+									<span className="text-xs text-muted-foreground">
+										<RelativeTime date={investor.created_at} />
+									</span>
+								</div>
+								{displayEmail && (
+									<p className="text-xs text-muted-foreground">
+										{displayEmail}
+									</p>
+								)}
 							</div>
-							<p className="text-sm text-muted-foreground">
-								{investor.user.email}
-							</p>
+
+							{/* Amount */}
+							{displayAmount !== null && (
+								<div className="ml-auto font-medium">
+									<Button>+${displayAmount}</Button>
+								</div>
+							)}
 						</div>
-						<div className="ml-auto font-medium">
-							<Button>+${investor.amount}</Button>
-						</div>
-					</div>
-				))
+					);
+				})
 			) : (
-				<p>No investors available.</p>
+				<p className="text-sm text-gray-500 text-center">
+					No investors available.
+				</p>
 			)}
 		</div>
 	);
