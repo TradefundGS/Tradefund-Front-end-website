@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import NotificationsPopover from "./NotificationsPopover";
 import { CircleAlert } from "lucide-react";
 import { toast } from "sonner";
+
 const navigation = [
 	{ name: "Investor", href: "/invest" },
 	{ name: "Borrower", href: "/create" },
@@ -25,9 +26,11 @@ const navigation = [
 	{ name: "FAQ", href: "/faq" },
 	{ name: "Contact Us", href: "/contact" },
 ];
+
 const IMAGE_BASE_URL = `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}`;
+
 export default function Header() {
-	const { data, isLoading: isProfileLoading } = useProfile();
+	const { data } = useProfile();
 	const { isLoggedIn, logout, userData } = useContext(AuthContext);
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -36,8 +39,6 @@ export default function Header() {
 	useEffect(() => {
 		if (userData?.profile_image && typeof userData.profile_image === "string") {
 			const baseURL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL?.trim();
-
-			// Ensure full URL or properly formatted relative path
 			let fullPath: string;
 
 			if (
@@ -49,7 +50,6 @@ export default function Header() {
 					""
 				)}/${userData.profile_image.replace(/^\//, "")}`;
 			} else {
-				// fallback to public folder relative path
 				fullPath = `/profile_image/${userData.profile_image.replace(
 					/^\//,
 					""
@@ -66,8 +66,6 @@ export default function Header() {
 		try {
 			logout();
 			router.push("/");
-
-			// Show success toast message on logout
 			toast.success("Logout successful!", {
 				description: "You have successfully logged out.",
 				icon: (
@@ -77,8 +75,7 @@ export default function Header() {
 					/>
 				),
 			});
-		} catch (error) {
-			// Show error toast message if there's an issue with logout
+		} catch (error: any) {
 			toast.error("Logout error", {
 				description: error.message,
 				icon: (
@@ -98,10 +95,12 @@ export default function Header() {
 					aria-label="Global"
 					className="mx-auto flex max-w-7xl items-center justify-between gap-x-6 p-6 lg:px-8"
 				>
+					{/* Logo */}
 					<div className="flex lg:flex-1 relative">
 						<Link
 							href="/"
 							className="-m-1.5 p-1.5 relative"
+							onClick={() => setMobileMenuOpen(false)}
 						>
 							<span className="sr-only">Trade Fund</span>
 							<Image
@@ -111,7 +110,6 @@ export default function Header() {
 								width={81}
 								height={31}
 							/>
-
 							{/* Animated Dots */}
 							<div className="absolute bottom-0 right-4 flex space-x-1 translate-x-3 translate-y-3">
 								<div className="w-2 h-2 bg-[#05aeeb] rounded-full animate-bounceDot1"></div>
@@ -122,8 +120,7 @@ export default function Header() {
 						</Link>
 					</div>
 
-					{/* Animated Dots */}
-
+					{/* Desktop Navigation */}
 					<div className="hidden lg:flex lg:gap-x-12">
 						{navigation.map((item) => (
 							<Link
@@ -135,6 +132,8 @@ export default function Header() {
 							</Link>
 						))}
 					</div>
+
+					{/* Right Section */}
 					<div className="flex flex-1 items-center justify-end gap-x-6">
 						{!isLoggedIn ? (
 							<>
@@ -174,7 +173,7 @@ export default function Header() {
 													height={40}
 													className="inline-block h-14 w-14 rounded-full object-cover"
 													alt="User profile image"
-													unoptimized={!imageSrc.startsWith("/")} // disable optimization for external URLs
+													unoptimized={!imageSrc.startsWith("/")}
 													onError={() => setImageSrc(null)}
 												/>
 											) : (
@@ -216,6 +215,8 @@ export default function Header() {
 							</div>
 						)}
 					</div>
+
+					{/* Mobile Hamburger */}
 					<div className="flex lg:hidden">
 						<button
 							type="button"
@@ -230,6 +231,8 @@ export default function Header() {
 						</button>
 					</div>
 				</nav>
+
+				{/* Mobile Menu Drawer */}
 				<Dialog
 					open={mobileMenuOpen}
 					onClose={() => setMobileMenuOpen(false)}
@@ -241,6 +244,7 @@ export default function Header() {
 							<Link
 								href="/"
 								className="-m-1.5 p-1.5"
+								onClick={() => setMobileMenuOpen(false)}
 							>
 								<span className="sr-only">Trade Fund</span>
 								<Image
@@ -263,30 +267,39 @@ export default function Header() {
 								/>
 							</button>
 						</div>
+
 						<div className="mt-6 flow-root">
 							<div className="-my-6 divide-y divide-gray-500/10">
+								{/* Navigation Links */}
 								<div className="space-y-2 py-6">
 									{navigation.map((item) => (
 										<Link
 											key={item.name}
 											href={item.href}
+											onClick={() => setMobileMenuOpen(false)}
 											className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
 										>
 											{item.name}
 										</Link>
 									))}
 								</div>
+
+								{/* Auth Links */}
 								<div className="py-6">
 									{!isLoggedIn ? (
 										<Link
 											href="/auth/login"
+											onClick={() => setMobileMenuOpen(false)}
 											className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 hover:text-primary"
 										>
 											Log in
 										</Link>
 									) : (
 										<button
-											onClick={handleLogout}
+											onClick={() => {
+												handleLogout();
+												setMobileMenuOpen(false);
+											}}
 											className="-mx-3 block w-full text-left rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
 										>
 											Sign out
