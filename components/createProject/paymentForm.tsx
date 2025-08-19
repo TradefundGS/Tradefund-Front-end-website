@@ -7,22 +7,23 @@ import {
 	FormControl,
 	FormField,
 	FormItem,
-	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useCreateProject, useProjects, useGetCreateProject } from "@/reactQuery/mutation/home";
+import {
+	useCreateProject,
+	useProjects,
+	useGetCreateProject,
+} from "@/reactQuery/mutation/home";
 import { toast } from "sonner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "../ui/label";
 import { XCircleIcon } from "@heroicons/react/24/outline";
-import { CheckCircleIcon } from "@heroicons/react/20/solid";
 import { format } from "date-fns";
-// Define your schema
+
+// ✅ Define schema with payment_method
 const schema = z.object({
-	// payment_method: z.string().min(1, 'Please choose a payment method'),
+	payment_method: z.string().min(1, "Please choose a payment method"),
 });
 
 type PaymentFormValues = z.infer<typeof schema>;
@@ -33,32 +34,16 @@ interface PaymentFormProps {
 }
 
 export const PaymentForm: React.FC<PaymentFormProps> = ({ data, setData }) => {
-	const {
-		data: getCreateProjectData,
-		isLoading: getCreateProjectLoading,
-		isError: getCreateProjectError,
-		error: getCreateProjectErrorObj,
-	} = useGetCreateProject();
-  const lendingFee = getCreateProjectData?.lending_fee;
+	const { data: getCreateProjectData, isLoading: getCreateProjectLoading } =
+		useGetCreateProject();
+
+	const lendingFee = getCreateProjectData?.lending_fee;
 
 	const [paymentType, setPaymentType] = useState("");
-	const {
-		skip,
-		goForward,
-		blocked,
-		canBackward,
-		canSkip,
-		goBack,
-		isCompleted,
-		isLastStage,
-	} = useWizardNav();
-	const {
-		mutate,
-		isPending: isLoading,
-		isError,
-		error,
-		isSuccess,
-	} = useCreateProject();
+	const { goForward, goBack } = useWizardNav();
+
+	const { mutate, isPending: isLoading } = useCreateProject();
+
 	const form = useForm<PaymentFormValues>({
 		resolver: zodResolver(schema),
 		defaultValues: {
@@ -70,7 +55,8 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ data, setData }) => {
 	const walletAmount = dataHome?.user?.wallet_balance;
 
 	const onSubmit: SubmitHandler<PaymentFormValues> = (values) => {
-		const formattedDateString = format(new Date(data.end_date), "dd/MM/yyyy");
+		const formattedDateString = format(new Date(data.end_date), "yyyy-MM-dd");
+
 		const fullValues: any = {
 			...data,
 			...values,
@@ -78,19 +64,17 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ data, setData }) => {
 		};
 
 		const formData = new FormData();
-		for (var key in fullValues) {
-			if (fullValues.hasOwnProperty(key)) {
-				formData.append(key, fullValues[key]);
-			}
+		for (const key in fullValues) {
+			formData.append(key, fullValues[key]);
 		}
 
 		mutate(formData, {
 			onSuccess: (responseData: any) => {
-				if (responseData.success && responseData.success.message) {
+				if (responseData.success?.message) {
 					toast.success("Project Created Successfully", {
 						description:
 							responseData.success.message ||
-							"Your project has been submitted and is pending admin approval. Please wait for further updates.",
+							"Your project has been submitted and is pending admin approval.",
 					});
 					goForward();
 				} else {
@@ -101,9 +85,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ data, setData }) => {
 				}
 			},
 			onError: (error) => {
-				// Access the error message in the nested structure
 				const errorMessage = error.message || "An error occurred";
-
 				toast.error("Failed to Create Project", {
 					description: errorMessage,
 				});
@@ -124,8 +106,9 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ data, setData }) => {
 						name="payment_method"
 						render={({ field }) => (
 							<FormItem>
-
-                <p>Listing fee <b> ${lendingFee}</b></p>
+								<p>
+									Listing fee <b>${lendingFee}</b>
+								</p>
 								<FormControl>
 									<RadioGroup
 										value={field.value}
@@ -135,18 +118,17 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ data, setData }) => {
 										}}
 										className="mt-6 grid grid-cols-1 gap-y-6"
 									>
-										<div className="group relative flex cursor-pointer rounded-lg border border-gray-300 bg-white p-4 shadow-sm focus:outline-none">
+										<div className="group relative flex cursor-pointer rounded-lg border border-gray-300 bg-white p-4 shadow-sm">
 											<div className="flex flex-1 items-center">
 												<RadioGroupItem
 													value="wallet"
-													checked
 													className="h-5 w-5 text-indigo-600"
 												/>
 												<div className="ml-3 flex flex-col">
 													<span className="block text-sm font-medium text-gray-900">
 														Pay with Wallet
 													</span>
-													<span className="mt-1 flex items-center text-sm text-gray-500">
+													<span className="mt-1 text-sm text-gray-500">
 														{walletAmount !== undefined &&
 															(walletAmount > 0 ? (
 																<span className="text-sm font-medium text-gray-900">
@@ -168,7 +150,6 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ data, setData }) => {
 													/>
 												</div>
 											)}
-											<span className="absolute inset-0 rounded-lg border-2 border-transparent group-data-[checked]:border-indigo-600" />
 										</div>
 									</RadioGroup>
 								</FormControl>

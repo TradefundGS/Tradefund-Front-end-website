@@ -1,66 +1,89 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 interface DateCounterProps {
-  endDate: string; // Expected format: '21/05/2025'
+	endDate: string; // API can send 'YYYY-MM-DD' or 'DD/MM/YYYY' or 'DD-MM-YYYY'
 }
 
 const DateCounter: React.FC<DateCounterProps> = ({ endDate }) => {
-  const [countdown, setCountdown] = useState<string>('');
+	const [timeLeft, setTimeLeft] = useState<{
+		days: number;
+		hours: number;
+		minutes: number;
+		seconds: number;
+	} | null>(null);
 
-  useEffect(() => {
-    // Function to update the countdown
-    const updateCountdown = () => {
-      if (!endDate || typeof endDate !== 'string') {
-        setCountdown('Invalid date');
-        return;
-      }
+	// ✅ Utility to parse different date formats
+	const parseDate = (dateStr: string): Date | null => {
+		if (!dateStr) return null;
 
-      // Split and parse the endDate string
-      const [year, month, day] = endDate.split('-').map(Number);
+		// Case 1: YYYY-MM-DD
+		if (/^\d{4}[-/]\d{2}[-/]\d{2}$/.test(dateStr)) {
+			const [year, month, day] = dateStr.split(/[-/]/).map(Number);
+			return new Date(year, month - 1, day);
+		}
 
-      // Validate parsed values
-      if (isNaN(day) || isNaN(month) || isNaN(year)) {
-        setCountdown('Invalid date');
-        return;
-      }
+		// Case 2: DD-MM-YYYY or DD/MM/YYYY
+		if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(dateStr)) {
+			const [day, month, year] = dateStr.split(/[-/]/).map(Number);
+			return new Date(year, month - 1, day);
+		}
 
-      // Create Date object
-      const endDateObject = new Date(year, month - 1, day); // JavaScript months are 0-based
+		return null; // Fallback
+	};
 
-      // Get the current date
-      const currentDate = new Date();
+	useEffect(() => {
+		const updateCountdown = () => {
+			const endDateObject = parseDate(endDate);
+			if (!endDateObject) {
+				setTimeLeft(null);
+				return;
+			}
 
-      // Calculate the time difference
-      const timeDiff = endDateObject.getTime() - currentDate.getTime();
-      if (timeDiff <= 0) {
-        setCountdown('Expired');
-        return;
-      }
+			const now = new Date();
+			const diff = endDateObject.getTime() - now.getTime();
+			if (diff <= 0) {
+				setTimeLeft(null);
+				return;
+			}
 
-      // Calculate days, hours, minutes, and seconds
-      const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+			const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+			const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+			const minutes = Math.floor((diff / (1000 * 60)) % 60);
+			const seconds = Math.floor((diff / 1000) % 60);
 
-      // Update the countdown state
-      setCountdown(`${days} days, ${hours} hours, ${minutes} minutes`);
-    };
+			setTimeLeft({ days, hours, minutes, seconds });
+		};
 
-    // Update countdown initially
-    updateCountdown();
+		updateCountdown();
+		const interval = setInterval(updateCountdown, 1000);
+		return () => clearInterval(interval);
+	}, [endDate]);
 
-    // Update countdown every minute
-    const interval = setInterval(updateCountdown, 60000); // 60,000 ms = 1 minute
+	if (!timeLeft) {
+		return (
+			<div className="rounded-xl bg-red-100 text-red-600 px-4 py-2 font-medium text-center shadow">
+				Expired
+			</div>
+		);
+	}
 
-    // Cleanup interval on component unmount
-    return () => clearInterval(interval);
-  }, [endDate]);
-
-  return (
-    <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
-      {countdown}
-    </span>
-  );
+	return (
+		<div className="flex gap-2 bg-gray-900 text-white rounded-2xl px-4 py-2 shadow-lg w-fit">
+			{Object.entries(timeLeft).map(([label, value]) => (
+				<div
+					key={label}
+					className="flex flex-col items-center w-12"
+				>
+					<span className="text-lg font-bold tabular-nums">
+						{String(value).padStart(2, "0")}
+					</span>
+					<span className="text-[10px] uppercase tracking-wide text-gray-400">
+						{label}
+					</span>
+				</div>
+			))}
+		</div>
+	);
 };
 
 export default DateCounter;

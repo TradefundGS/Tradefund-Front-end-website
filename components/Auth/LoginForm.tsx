@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useState, useContext  } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter  } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -16,18 +16,17 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { CircleAlert } from "lucide-react";
-import { toast } from "sonner"; 
+import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { mutateFetcher } from "@/lib/mutations";
 import { setSession } from "@/lib/actions";
 import { AuthContext } from "@/contexts/authContext";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 
-
 const schema = z.object({
 	email: z.string().email("Invalid email address"),
 	password: z.string().min(6, "Password must be at least 6 characters"),
-  });
+});
 
 type LoginFormValues = z.infer<typeof schema>;
 
@@ -68,8 +67,15 @@ const LoginForm = () => {
 					/>
 				),
 			});
+
 			login(data);
-			router.refresh();
+
+			// get redirect param OR default
+			const redirectUrl =
+				new URLSearchParams(window.location.search).get("redirect") || "/";
+
+			// ✅ replace instead of push (removes /auth/login?redirect=... from history)
+			router.replace(redirectUrl);
 		},
 	});
 
@@ -106,32 +112,32 @@ const LoginForm = () => {
 							)}
 						/>
 						<FormField
-  control={form.control}
-  name="password"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel>Password</FormLabel>
-      <FormControl>
-        <div className="relative">
-          <Input
-            type={showPassword ? "text" : "password"}
-            autoComplete="current-password"
-            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pr-10" // Add padding on the right side for the button
-            {...field}
-          />
-          <button 
-            type="button" 
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-2 flex items-center cursor-pointer text-gray-400 focus:outline-none focus:text-blue-600 dark:text-neutral-600 dark:focus:text-blue-500" // Position the button
-          >
-            <span>{showPassword ? <FiEye /> : <FiEyeOff />}</span>
-          </button>
-        </div>
-      </FormControl>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
+							control={form.control}
+							name="password"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Password</FormLabel>
+									<FormControl>
+										<div className="relative">
+											<Input
+												type={showPassword ? "text" : "password"}
+												autoComplete="current-password"
+												className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pr-10" // Add padding on the right side for the button
+												{...field}
+											/>
+											<button
+												type="button"
+												onClick={() => setShowPassword(!showPassword)}
+												className="absolute inset-y-0 right-2 flex items-center cursor-pointer text-gray-400 focus:outline-none focus:text-blue-600 dark:text-neutral-600 dark:focus:text-blue-500" // Position the button
+											>
+												<span>{showPassword ? <FiEye /> : <FiEyeOff />}</span>
+											</button>
+										</div>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 						<div className="flex items-center justify-between">
 							<div className="flex items-center">
 								<input
