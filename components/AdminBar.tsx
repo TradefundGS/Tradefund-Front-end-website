@@ -1,303 +1,321 @@
-
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { useState } from 'react';
 import { useRouter } from "next/navigation";
 import { useProfile } from "@/reactQuery/mutation/home";
 import { format } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+	Wallet,
+	Calendar,
+	MapPin,
+	ShieldCheck,
+	Plus,
+	Menu,
+	TrendingUp,
+	ArrowUpRight,
+	DollarSign,
+} from "lucide-react";
 import DepositDrawer from "./deposit/DepositDrawer";
 
 const IMAGE_BASE_URL = `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}`;
 
-const AdminBar = ({ currentPage }) => {
-  const router = useRouter();
-  const { data, isLoading, isError, error } = useProfile();
-  const isKYCVerified = data?.user?.kyc_status === "Verified";
+const AdminBar = ({ currentPage }: { currentPage: string }) => {
+	const router = useRouter();
+	const { data, isLoading, isError, error } = useProfile();
+	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const isActive = (href) => href === currentPage;
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+	const isActive = (href: string) => href === currentPage;
 
-  const handleOpenDrawer = () => {
-    setIsDrawerOpen(true);
-  };
+	if (isLoading) {
+		return (
+			<Card className="w-full bg-gradient-to-br from-white via-blue-50/30 to-purple-50/20 backdrop-blur-sm border-0 shadow-xl">
+				<CardContent className="p-6">
+					<div className="flex flex-col lg:flex-row justify-between items-start gap-6">
+						{/* Profile Section Skeleton */}
+						<div className="flex items-center gap-4">
+							<Skeleton className="h-16 w-16 rounded-full" />
+							<div className="flex flex-col gap-3">
+								<Skeleton className="h-6 w-40" />
+								<Skeleton className="h-4 w-32" />
+								<Skeleton className="h-3 w-24" />
+							</div>
+						</div>
 
-  const handleCloseDrawer = () => {
-    setIsDrawerOpen(false);
-  };
+						{/* Stats Section Skeleton */}
+						<div className="flex flex-wrap gap-4">
+							<div className="flex items-center gap-3">
+								<Skeleton className="h-12 w-12 rounded-lg" />
+								<div className="flex flex-col gap-2">
+									<Skeleton className="h-3 w-20" />
+									<Skeleton className="h-5 w-24" />
+								</div>
+							</div>
+							<div className="flex items-center gap-3">
+								<Skeleton className="h-12 w-12 rounded-lg" />
+								<div className="flex flex-col gap-2">
+									<Skeleton className="h-3 w-16" />
+									<Skeleton className="h-5 w-20" />
+								</div>
+							</div>
+							<Skeleton className="h-11 w-32 rounded-lg" />
+						</div>
+					</div>
 
+					{/* Navigation Skeleton */}
+					<div className="mt-8 pt-6 border-t border-gray-200/60">
+						<div className="flex flex-wrap gap-3">
+							{[1, 2, 3, 4, 5].map((i) => (
+								<Skeleton
+									key={i}
+									className="h-10 w-24 rounded-lg"
+								/>
+							))}
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
 
-  if (isLoading) {
-    return (
-      <>
-        <div className="col-span-full card p-3 sm:p-7 bg-white divide-y divide-gray-200">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        {/* Left Flex Container */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-[3rem]">
-          <div className="col-span-6 sm:col-span-4 lg:col-span-6 2xl:col-span-4 flex items-center gap-2.5 self-start">
-            <div className="animate-pulse flex items-center">
-              <div className="w-12 h-12 rounded-full bg-gray-300"></div>
-              <div className="ml-4 flex-1">
-                <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-              </div>
-            </div>
-          </div>
+	if (isError) {
+		return (
+			<Card className="w-full border-red-200 bg-red-50">
+				<CardContent className="p-6">
+					<div className="flex items-center gap-3 text-red-700">
+						<div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
+							⚠
+						</div>
+						<div>
+							<p className="font-medium">Error loading profile</p>
+							<p className="text-sm text-red-600">
+								{error?.message || "Something went wrong"}
+							</p>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
 
-          <div className="col-span-6 sm:col-span-4 lg:col-span-6 2xl:col-span-4 flex items-center gap-2.5">
-            <div className="flex flex-col gap-1">
-              <div className="h-3 bg-gray-200 rounded w-2/4 mb-1"></div>
-              <div className="h-6 bg-gray-300 rounded w-3/4"></div>
-            </div>
-          </div>
+	const {
+		name,
+		wallet_balance,
+		profile_image,
+		created_at,
+		address,
+		kyc_status,
+	} = data.user;
 
-          <div className="col-span-6 sm:col-span-4 lg:col-span-6 2xl:col-span-4 flex items-center gap-2.5">
-            <div className="flex flex-col gap-1">
-              <div className="h-3 bg-gray-200 rounded w-2/4 mb-1"></div>
-              <div className="h-6 bg-gray-300 rounded w-3/4"></div>
-            </div>
-          </div>
-        </div>
+	const formattedDate = format(new Date(created_at), "MMM dd, yyyy");
 
-        {/* Right Flex Container */}
-        <div className="flex items-center sm:flex-row gap-3 sm:gap-0">
-          {/* Mobile Dropdown Menu */}
-          <div className="sm:hidden flex items-center">
-            <button className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white animate-pulse w-24 h-8"></button>
-          </div>
+	return (
+		<Card className="w-full bg-gradient-to-br from-white via-blue-50/30 to-purple-50/20 backdrop-blur-sm border-0 shadow-xl">
+			<CardContent className="p-6">
+				<div className="flex flex-col lg:flex-row justify-between items-start gap-6">
+					{/* Profile Section */}
+					<div className="flex items-start gap-4">
+						<div className="relative">
+							<Avatar className="h-16 w-16 border-2 border-white shadow-lg ring-2 ring-blue-100/50">
+								<AvatarImage
+									src={profile_image ? `${IMAGE_BASE_URL}${profile_image}` : ""}
+									alt={name}
+									className="object-cover"
+								/>
+								<AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xl font-semibold">
+									{name.charAt(0).toUpperCase()}
+								</AvatarFallback>
+							</Avatar>
+							{kyc_status === "Verified" && (
+								<div className="absolute -bottom-1 -right-1 h-6 w-6 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
+									<ShieldCheck className="h-3 w-3 text-white" />
+								</div>
+							)}
+						</div>
 
-          {/* Desktop Navigation */}
-          <ul className="hidden text-sm font-medium text-center text-gray-500 rounded-lg shadow sm:flex dark:divide-gray-700 dark:text-gray-400">
-            {[...Array(6)].map((_, i) => (
-              <li
-                key={i}
-                className="w-full focus-within:z-10 bg-gray-300 h-8 rounded-md mx-1 mb-1 animate-pulse"
-              ></li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </div>
-      </>
-    );
-  }
+						<div className="flex-1 min-w-0">
+							<div className="flex items-center gap-3 mb-2">
+								<h2 className="text-xl font-bold text-gray-900 truncate">
+									{name}
+								</h2>
+								{kyc_status === "Verified" && (
+									<Badge
+										variant="secondary"
+										className="bg-green-100 text-green-700 border-green-200"
+									>
+										<ShieldCheck className="h-3 w-3 mr-1" />
+										Verified
+									</Badge>
+								)}
+							</div>
 
-  if (isError) {
-    return <div>Error: {error.message}</div>;
-  }
+							<div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+								<MapPin className="h-4 w-4 flex-shrink-0" />
+								<span className="truncate">{address}</span>
+							</div>
 
-  const { name, email, wallet_balance, profile_image, created_at, address } =
-    data.user;
-  const formattedDate = format(new Date(created_at), "dd-MM-yyyy");
-  const profileImage = `${IMAGE_BASE_URL}${profile_image}`;
+							<div className="flex items-center gap-2 text-sm text-gray-500">
+								<Calendar className="h-4 w-4 flex-shrink-0" />
+								<span>Joined {formattedDate}</span>
+							</div>
+						</div>
+					</div>
 
-  return (
-    <div className="col-span-full card p-3 sm:p-7 bg-white divide-y divide-gray-200">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        {/* Left Flex Container */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-[3rem]">
-          <div className="col-span-6 sm:col-span-4 lg:col-span-6 2xl:col-span-4 flex items-center gap-2.5 self-start">
-            <a
-              href="javascript:void(0)"
-              className="size-12 rounded-md relative shrink-0"
-            >
-              <Avatar className="rounded ">
-                <AvatarImage
-                  src={profile_image ? `${IMAGE_BASE_URL}${profile_image}` : ""}
-                  alt={name}
-                  className="object-cover size-full rounded-lg"
-                />
-                <AvatarFallback className="bg-gray-300 text-xl text-semibold">
-                  {name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </a>
-            <div>
-              <h6 className="text-heading font-semibold line-clamp-1">
-                <div className="flex flex-row gap-1">
-                  <a href="javascript:void(0)">{name}</a>
-                  {isKYCVerified && (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="#10B981"
-                      className="size-6"
-                    >
-                      <title>Verified User</title>
-                      <path
-                        fillRule="evenodd"
-                        d="M8.603 3.799A4.49 4.49 0 0 1 12 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 0 1 3.498 1.307 4.491 4.491 0 0 1 1.307 3.497A4.49 4.49 0 0 1 21.75 12a4.49 4.49 0 0 1-1.549 3.397 4.491 4.491 0 0 1-1.307 3.497 4.491 4.491 0 0 1-3.497 1.307A4.49 4.49 0 0 1 12 21.75a4.49 4.49 0 0 1-3.397-1.549 4.49 4.49 0 0 1-3.498-1.306 4.491 4.491 0 0 1-1.307-3.498A4.49 4.49 0 0 1 2.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 0 1 1.307-3.497 4.49 4.49 0 0 1 3.497-1.307Zm7.007 6.387a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  )}
-                </div>
-              </h6>
-              <div className="font-spline_sans leading-none text-heading dark:text-dark-text-two mt-1">
-                <span className="text-gray-500 dark:text-dark-text">
-                  {address}
-                </span>
-              </div>
-            </div>
-          </div>
+					{/* Stats & Actions Section */}
+					<div className="flex flex-wrap items-center gap-6">
+						{/* Wallet Balance Card */}
+						<div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-xl p-2 shadow-sm border border-gray-200/60">
+							<div className="h-8 w-8 bg-gray-900 rounded-lg flex items-center justify-center shadow-sm">
+								<Wallet className="h-4 w-4 text-white" />
+							</div>
+							<div>
+								<p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+									Wallet Balance
+								</p>
+								<p className="text-2xl font-bold text-gray-900 flex items-center gap-1">
+									<DollarSign className="h-5 w-5" />
+									{parseFloat(wallet_balance).toLocaleString("en-US", {
+										minimumFractionDigits: 2,
+										maximumFractionDigits: 2,
+									})}
+								</p>
+							</div>
+						</div>
 
-          <div className="col-span-6 sm:col-span-4 lg:col-span-6 2xl:col-span-4 flex items-center gap-2.5">
-            <div className="flex flex-col gap-1">
-              <p className="text-xs text-gray-500 dark:text-dark-text">
-                Wallet Balance
-              </p>
-              <h6 className="text-heading">${wallet_balance}</h6>
-            </div>
-          </div>
+						{/* Add to Wallet Button */}
+						<Button
+							onClick={() => setIsDrawerOpen(true)}
+							size="lg"
+							className="bg-primary hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 group"
+						>
+							<Plus className="h-5 w-5 mr-2 group-hover:rotate-90 transition-transform duration-200" />
+							Add Funds
+							<ArrowUpRight className="h-4 w-4 ml-2 opacity-70" />
+						</Button>
 
-          <div className="col-span-6 sm:col-span-4 lg:col-span-6 2xl:col-span-4 flex items-center gap-2.5">
-            <div className="flex flex-col gap-1">
-              <p className="text-xs text-gray-500 dark:text-dark-text">
-                Joined
-              </p>
-              <h6 className="text-heading">{formattedDate}</h6>
-            </div>
-          </div>
+						<DepositDrawer
+							open={isDrawerOpen}
+							onClose={() => setIsDrawerOpen(false)}
+						/>
 
-          <div className="col-span-6 sm:col-span-4 lg:col-span-6 2xl:col-span-4 flex items-center gap-2.5">
-          <div className="flex flex-col items-center">
-          <button
-                onClick={() => setIsDrawerOpen(true)}
-                className="bg-gray-900 text-white px-4 py-2 rounded-md"
-            >
-                Add to Wallet
-            </button>
+						{/* Mobile Menu */}
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									variant="outline"
+									size="lg"
+									className="lg:hidden border-gray-300 hover:bg-gray-50"
+								>
+									<Menu className="h-5 w-5 mr-2" />
+									Menu
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent
+								align="end"
+								className="w-56"
+							>
+								<DropdownMenuLabel className="font-semibold">
+									Navigation
+								</DropdownMenuLabel>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem asChild>
+									<Link
+										href="/dashboard/myprojects"
+										className="flex items-center gap-2"
+									>
+										<TrendingUp className="h-4 w-4" />
+										Projects
+									</Link>
+								</DropdownMenuItem>
+								<DropdownMenuItem asChild>
+									<Link
+										href="/dashboard/funds"
+										className="flex items-center gap-2"
+									>
+										<Wallet className="h-4 w-4" />
+										Funds
+									</Link>
+								</DropdownMenuItem>
+								<DropdownMenuItem asChild>
+									<Link
+										href="/dashboard/transactions"
+										className="flex items-center gap-2"
+									>
+										<ArrowUpRight className="h-4 w-4" />
+										Transactions
+									</Link>
+								</DropdownMenuItem>
+								<DropdownMenuItem asChild>
+									<Link
+										href="/settings"
+										className="flex items-center gap-2"
+									>
+										<ShieldCheck className="h-4 w-4" />
+										Settings
+									</Link>
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</div>
+				</div>
 
-            <DepositDrawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
-    </div>
-          </div>
-
-        </div>
-
-        {/* Right Flex Container */}
-        <div className="flex items-center sm:flex-row gap-3 sm:gap-0">
-          {/* Mobile Dropdown Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <button className="sm:hidden bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                Open
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Navigate</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Link href="/dashboard/myprojects">Projects</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link href="/dashboard/funds">Funds</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link href="/dashboard/transactions">Transactions</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link href="/settings">Settings</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Desktop Navigation */}
-          <ul className="hidden text-sm font-medium text-center text-gray-500 rounded-lg shadow sm:flex dark:divide-gray-700 dark:text-gray-400">
-            <li
-              className={`w-full focus-within:z-10 ${
-                isActive("/dashboard/myprojects") ? "bg-primary text-white" : ""
-              }`}
-            >
-              <Link href="/dashboard/myprojects">
-                <span
-                  className={`inline-block w-full p-4 border-r border-gray-200 dark:border-gray-700 rounded-s-lg focus:ring-4 focus:ring-blue-300 active focus:outline-none dark:bg-gray-700 hover:bg-primary hover:text-white dark:text-white ${
-                    isActive("/dashboard/myprojects")
-                      ? "bg-primary text-white"
-                      : ""
-                  }`}
-                >
-                  Projects
-                </span>
-              </Link>
-            </li>
-
-            <li
-              className={`w-full focus-within:z-10 ${
-                isActive("/dashboard/funds") ? "bg-primary text-white" : ""
-              }`}
-            >
-              <Link href="/dashboard/funds">
-                <span
-                  className={`inline-block w-full p-4 border-r border-gray-200 dark:border-gray-700 hover:text-white hover:bg-gray-50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:hover:text-white hover:bg-primary dark:hover:bg-gray-700 ${
-                    isActive("/dashboard/funds") ? "bg-primary text-white" : ""
-                  }`}
-                >
-                  Funds
-                </span>
-              </Link>
-            </li>
-            <li
-              className={`w-full focus-within:z-10 ${
-                isActive("/dashboard/transactions")
-                  ? "bg-primary text-white"
-                  : ""
-              }`}
-            >
-              <Link href="/dashboard/transactions">
-                <span
-                  className={`inline-block w-full p-4 border-r border-gray-200 dark:border-gray-700 hover:text-white hover:bg-gray-50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:hover:text-white hover:bg-primary dark:hover:bg-gray-700 ${
-                    isActive("/dashboard/transactions")
-                      ? "bg-primary text-white"
-                      : ""
-                  }`}
-                >
-                  Transactions
-                </span>
-              </Link>
-            </li>
-            <li
-              className={`w-full focus-within:z-10 ${
-                isActive("/withdraw") ? "bg-primary text-white" : ""
-              }`}
-            >
-              <Link href="/withdraw">
-                <span
-                  className={`inline-block w-full p-4 border-r border-gray-200 dark:border-gray-700 hover:text-white hover:bg-gray-50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:hover:text-white hover:bg-primary dark:hover:bg-gray-700 ${
-                    isActive("/withdraw") ? "bg-primary text-white" : ""
-                  }`}
-                >
-                  Withdraw
-                </span>
-              </Link>
-            </li>
-			<li
-              className={`w-full focus-within:z-10 ${
-                isActive("/money-transfer") ? "bg-primary text-white" : ""
-              }`}
-            >
-              <Link href="/money-transfer">
-                <span
-                  className={`inline-block w-full p-4 border-r border-gray-200 dark:border-gray-700 hover:text-white hover:bg-gray-50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:hover:text-white hover:bg-primary dark:hover:bg-gray-700 ${
-                    isActive("/money-transfer") ? "bg-primary text-white" : ""
-                  }`}
-                >
-                  Transfer
-                </span>
-              </Link>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
+				{/* Navigation Tabs */}
+				<div className="mt-8 pt-6 border-t border-gray-200/60">
+					<div className="flex flex-wrap gap-2">
+						{[
+							{
+								name: "Projects",
+								href: "/dashboard/myprojects",
+								icon: TrendingUp,
+							},
+							{ name: "Funds", href: "/dashboard/funds", icon: Wallet },
+							{
+								name: "Transactions",
+								href: "/dashboard/transactions",
+								icon: ArrowUpRight,
+							},
+							{ name: "Withdraw", href: "/withdraw", icon: DollarSign },
+							{ name: "Transfer", href: "/money-transfer", icon: ArrowUpRight },
+						].map((tab) => {
+							const Icon = tab.icon;
+							return (
+								<Link
+									key={tab.href}
+									href={tab.href}
+								>
+									<Button
+										variant={isActive(tab.href) ? "default" : "ghost"}
+										className={`
+                      rounded-lg transition-all duration-200 group
+                      ${
+												isActive(tab.href)
+													? "bg-primary text-white shadow-md hover:shadow-lg"
+													: "hover:bg-gray-100 text-gray-600 hover:text-gray-900"
+											}
+                    `}
+									>
+										<Icon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
+										{tab.name}
+									</Button>
+								</Link>
+							);
+						})}
+					</div>
+				</div>
+			</CardContent>
+		</Card>
+	);
 };
 
 export default AdminBar;

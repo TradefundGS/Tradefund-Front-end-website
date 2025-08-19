@@ -112,7 +112,7 @@ const MyTransactionPage: React.FC = () => {
 					</div>
 				),
 				accessorKey: "createdAt",
-				cell: (info) => formatDate(info.getValue() as string),
+				cell: (info:any) => formatDate(info.getValue() as string),
 			},
 			{
 				header: "Comment",
